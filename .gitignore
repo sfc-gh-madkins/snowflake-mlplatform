@@ -1,0 +1,10 @@
+.DS_Store
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+
+snowflake_mlplatform.egg-info
+*.pyc
+
+__pycache__/

@@ -1,0 +1,7 @@
+mypy
+pandas
+pytest
+ruff
+snowflake-connector-python[secure-local-storage]
+snowflake-snowpark-python[localtest]
+snowflake-ml-python

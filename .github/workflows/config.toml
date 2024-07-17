@@ -1,0 +1,6 @@
+default_connection_name = "snowconnection"
+
+[connections]
+[connections.snowconnection]
+user = ""
+password = ""

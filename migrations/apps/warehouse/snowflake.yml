@@ -1,0 +1,23 @@
+definition_version: "1.1"
+snowpark:
+  project_name: "snowflake_batch_primitives"
+  stage_name: <% ctx.env.SNOWFLAKE_DATABASE %>.<% ctx.env.SNOWFLAKE_SCHEMA %>.BATCH_PREDICTION_APPS
+  src: "../../../mlplatform/apps/warehouse/"
+  procedures:
+    - name: <% ctx.env.SNOWFLAKE_DATABASE %>.<% ctx.env.SNOWFLAKE_SCHEMA %>.PREDICTION_TABLE_PROCEDURE
+      runtime: "3.9"
+      #imports:
+      #  - "@<% ctx.env.SNOWFLAKE_DATABASE %>.<% ctx.env.SNOWFLAKE_SCHEMA %>.<% ctx.env.SNOWFLAKE_STAGE %>/packages/snowflake_ml_python.zip"
+      handler: "prediction_table_procedure.predict_tp"
+      signature:
+        - name: "spine_table_name"
+          type: "string"
+        - name: "model"
+          type: "string"
+        - name: "dataset"
+          type: "string"
+      returns: table()
+      execute_as_caller: True
+env:
+  SNOWFLAKE_DATABASE: ""
+  SNOWFLAKE_SCHEMA: ""

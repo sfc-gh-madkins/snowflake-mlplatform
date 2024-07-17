@@ -1,0 +1,6 @@
+.packages/
+.venv/
+requirements.snowflake.txt
+warehouse.zip
+snowflake_ml_python.zip
+__pycache__
