@@ -1,4 +1,4 @@
-# Snowflake ML Platform: An example repo for getting models into production
+# Snowflake ML Platform: An template repository for MLOps with Snowflake
 
 Snowflakes point of view is that AI & machine learning is a superset of software engineering. The purpose of this repository is be a starting point (and includes a demo) that satisfies all of the requisite software engineering best practices for safely deploying a machine learning model into production using entirely Snowflake primitives.
 
@@ -14,46 +14,38 @@ Much like how standard software code is safely deployed to production, we will:
 
 From a Snowflake perspective, the key features of the pipeline includes:
 - Snowflake Feature Store (the ability to define features declaratively)
-- Snowflake Datasets (the ability to create point-in-time correct datasets for model training)
+- Snowflake Datasets (the ability to create point-in-time correct immutable datasets for model training)
 - Snowflake Model Registry (the ability to performance ultra-scalable inference)
 
-## To get this demo running:
+## Installation: Running the example
 A. Fork the MLPlatform Repo: https://github.com/sfc-gh-madkins/snowflake-mlplatform
 
-B. Click on the Actions tab and Select that you understand workflows will be enabled
-
-C. Add a new Environment for testing under Settings - name it: `test`
-
-D. Add in Environment Secrets to `test` with your values:
-
+B. Go to the repository Settings > Secrets and variables > Actions page and add the following "Repository secrets > New repository secret":
     SNOWFLAKE_ACCOUNT
     SNOWFLAKE_USER
     SNOWFLAKE_PASSWORD
     SNOWFLAKE_ROLE
     SNOWFLAKE_WAREHOUSE
 
-E. Add in Environment Variables to `test`:
+C. Go to the repository Settings > Environments and create a "New environment > Add" named: `prod`
 
-    SNOWFLAKE_DATABASE_PROD - (location of existing airline feature store)
-    SNOWFLAKE_SCHEMA_PROD -  Schema for feature store - typically “FEATURE_STORE”
+D. On the same page, add the following "Environment variables > New environment variable":
+    Name: SNOWFLAKE_DATABASE_PROD Value: <your snowflake database>
+    Name: SNOWFLAKE_SCHEMA_PROD Value: <your snowflake schema>
 
-F. Add a new Environment for testing under Settings - name it: `prod`
+  *<your snowflake database>.<your snowflake schema> willl be the namespace where all of the demo assets will land, or, for production, would be the path where all of your snowflake objects would live*
 
-H. Add in Environment Secrets to `prod` with your values:
+E. Go to the repository Settings > Environments and create a "New environment > Add" named: `test`
 
-    SNOWFLAKE_ACCOUNT
-    SNOWFLAKE_USER
-    SNOWFLAKE_PASSWORD
-    SNOWFLAKE_ROLE
-    SNOWFLAKE_WAREHOUSE
+F. On the same page, add the following "Environment variables > New environment variable":
+Name: SNOWFLAKE_DATABASE_PROD Value: <your snowflake database>
+Name: SNOWFLAKE_SCHEMA_PROD Value: <your snowflake schema>
 
-I. Add in Environment Variables to `prod`:
+G. Click on the Actions tab and Select that you understand workflows will be enabled
 
-    SNOWFLAKE_DATABASE_PROD - (location of existing airline feature store)
-    SNOWFLAKE_SCHEMA_PROD -  Schema for feature store - typically “FEATURE_STORE”
+H. Manually trigger the `install-prod-example` Github workflow to setup the initial set of base tables we will build the Snowflake ML Platform on top of.
 
-
-There is an install script if you already haven't setup the Airlines feature store. You can trigger workflows with a push or using the manual trigger
+*The demo data we will be using is related to the Airlines industry. Specifially, there will be 3 tables: US_FLIGHT_SCHEDULES, AIRPORT_WEATHER_STATION, and PLANE_MODEL_ATTRIBUTES, that we will play with in their raw state and look to build a series of features, datasets, and models that solve a "prediciting flight delays" use case*
 
 ---
 
