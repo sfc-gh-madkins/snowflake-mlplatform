@@ -1,0 +1,54 @@
+name: release-prod
+on: [release, workflow_dispatch] #workflow_dispatch: Allows you to run this workflow manually from the Actions tab
+jobs:
+  deploy-snowflake-prod:
+    name: "Release Snowflake Objects to Production"
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+
+      SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE_PROD }}
+      SNOWFLAKE_SCHEMA: ${{ vars.SNOWFLAKE_SCHEMA_PROD }}
+    steps:
+      # Mount github repo
+      - name: Mount github repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install snowflake cli
+        uses: Snowflake-Labs/snowflake-cli-action@v1
+        with:
+          cli-version: "latest"
+          default-config-file-path: "./.github/workflows/config.toml"
+
+      - name: Setup python environment
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          architecture: x64
+
+      - name: Install python dependencies (including this repo itself)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install --no-deps -e .
+
+      - name: Apply changes to snowflake features store, datasets, and model registry
+        run: |
+          python ./migrations/features/apply_features.py
+          python ./migrations/datasets/apply_datasets.py
+          python ./migrations/models/apply_models.py
+
+      - name: Apply changes to snowflake apps
+        run: |
+          cd ./migrations/apps/warehouse
+          snow snowpark build
+          snow snowpark deploy --replace

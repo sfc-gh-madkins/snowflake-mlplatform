@@ -1,0 +1,34 @@
+name: install-prod-example
+on: [workflow_dispatch] #workflow_dispatch: Allows you to run this workflow manually from the Actions tab
+jobs:
+  integration-test-python:
+    name: "Run installer for Airline Demo"
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+
+      SNOWFLAKE_DATABASE_PROD: ${{ vars.SNOWFLAKE_DATABASE_PROD }}
+      SNOWFLAKE_SCHEMA_PROD: ${{ vars.SNOWFLAKE_SCHEMA_PROD }}
+    steps:
+      - name: Mount github repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install snowflake cli
+        uses: Snowflake-Labs/snowflake-cli-action@v1
+        with:
+          cli-version: "latest"
+          default-config-file-path: "./.github/workflows/config.toml"
+
+      - name: Create snowflake production schema
+        run: |
+          snow sql --filename ./installation/prod/airline_data.sql \
+          --variable "database=$SNOWFLAKE_DATABASE_PROD" \
+          --variable "schema=$SNOWFLAKE_SCHEMA_PROD"
