@@ -58,7 +58,7 @@ def airplane_flight_delay_pipeline(X: pd.DataFrame, y: pd.Series):
 
 
 def airplane_flight_delay_model_V2(dataset: Dataset) -> dict:
-    X = dataset.read.to_snowpark_dataframe().to_pandas()
+    X = dataset.read.to_pandas()
     y = X.pop(dataset.selected_version.label_cols[0])
 
     model = airplane_flight_delay_pipeline(X, y)

@@ -60,7 +60,7 @@ def pytest_sessionfinish(session, exitstatus):
         session = Session.builder.configs(get_connection_parameters()).create()
 
         database, _, _ = get_session_path()
-        session.sql(f"DROP DATABASE {database}").collect()
+        #session.sql(f"DROP DATABASE {database}").collect()
 
 
 @pytest.fixture(scope="module")
