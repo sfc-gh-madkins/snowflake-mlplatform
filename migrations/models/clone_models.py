@@ -4,6 +4,9 @@ import os
 
 from snowflake.snowpark import Session
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
 
 def clone_models(session: Session, prod_database: str, prod_schema: str):
     model_path = f"{prod_database}.{prod_schema}"
