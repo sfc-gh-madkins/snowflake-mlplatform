@@ -29,7 +29,7 @@ def get_connection_parameters():
     connection_params = {
         "ACCOUNT": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ACCOUNT"),
         "USER": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_USER"),
-        "PASSWORD": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSWORD"),
+     ## "PASSWORD": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSWORD"),
         "ROLE": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ROLE"),
         "WAREHOUSE": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE"),
         "private_key": private_key_obj,
