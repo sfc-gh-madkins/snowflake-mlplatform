@@ -22,7 +22,7 @@ def get_connection_parameters():
     private_key_bytes = private_key.encode('utf-8')
     
     private_key_obj = serialization.load_pem_private_key(
-            private_key,
+            private_key_bytes,
             password=passphrase.encode() if passphrase else None,
             backend=default_backend()
         )
