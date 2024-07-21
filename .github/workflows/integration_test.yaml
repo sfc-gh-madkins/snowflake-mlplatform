@@ -51,8 +51,16 @@ jobs:
           cli-version: "latest"
           default-config-file-path: "./.github/workflows/config.toml"
 
-      - name: Clone snowflake production schema
+      - name: Decrypt and save private key
         run: |
+          echo "${{ secrets.SNOWFLAKE_RSAKEY }}" > encrypted_private_key.pem
+          openssl rsa -in encrypted_private_key.pem -out private_key.pem -passin pass:${{ secrets.SNOWFLAKE_PASSPHRASE }}
+
+      - name: Clone snowflake production schema
+        env:
+          SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
+        run: |
+          export SNOWSQL_PRIVATE_KEY_PATH=$SNOWFLAKE_PRIVATE_KEY_PATH
           snow sql -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
           snow sql -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
           python ./migrations/models/clone_models.py --prod_database $SNOWFLAKE_DATABASE_PROD --prod_schema $SNOWFLAKE_SCHEMA_PROD
@@ -72,3 +80,7 @@ jobs:
       - name: Run python integration tests
         run: |
           pytest -m integration
+
+      - name: Clean up private key
+        run: |
+          rm private_key.pem encrypted_private_key.pem
