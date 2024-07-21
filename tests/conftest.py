@@ -15,6 +15,11 @@ SCHEMA = f"SNOWFLAKE_MLPLATFORM_TEST_{datetime.now().strftime('%Y%m%d%H%M%S')}_{
 def get_connection_parameters():
     passphrase = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSPHRASE")
     private_key = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_RSAKEY")
+    if private_key is None:
+        raise ValueError("No private key found in environment variables")
+    
+    # Convert the key to bytes
+    private_key_bytes = private_key.encode('utf-8')
     
     private_key_obj = serialization.load_pem_private_key(
             private_key,
