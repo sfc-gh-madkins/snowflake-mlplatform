@@ -13,6 +13,9 @@ jobs:
       SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
 
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSPHRASE: ${{ secrets.SNOWFLAKE_PASSPHRASE }}
+      SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_RSAKEY: ${{ secrets.SNOWFLAKE_RSAKEY }}
+
       SNOWFLAKE_DATABASE_PROD: ${{ vars.SNOWFLAKE_DATABASE_PROD }}
       SNOWFLAKE_SCHEMA_PROD: ${{ vars.SNOWFLAKE_SCHEMA_PROD }}
     steps:
@@ -48,12 +51,20 @@ jobs:
           cli-version: "latest"
           default-config-file-path: "./.github/workflows/config.toml"
 
-      - name: Clone snowflake production schema
+      - name: Decrypt and save private key
         run: |
-          snow sql -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
-          snow sql -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
-          python ./migrations/models/clone_models.py --prod_database $SNOWFLAKE_DATABASE_PROD --prod_schema $SNOWFLAKE_SCHEMA_PROD
+          echo "${{ secrets.SNOWFLAKE_RSAKEY }}" > encrypted_private_key.pem
+          openssl rsa -in encrypted_private_key.pem -out private_key.pem -passin pass:${{ secrets.SNOWFLAKE_PASSPHRASE }}
 
+      - name: Clone snowflake production schema
+        env:
+          SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
+          SNOWFLAKE_AUTHENTICATOR: "SNOWFLAKE_JWT"
+        run: |
+          snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
+          snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
+          python ./migrations/models/clone_models.py --prod_database $SNOWFLAKE_DATABASE_PROD --prod_schema $SNOWFLAKE_SCHEMA_PROD
+    
       - name: Apply changes to snowflake features store, datasets, and model registry
         run: |
           python ./migrations/features/apply_features.py --mode test
@@ -61,11 +72,18 @@ jobs:
           python ./migrations/models/apply_models.py
 
       - name: Apply changes to snowflake apps
+        env:
+          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/private_key.pem
+          SNOWFLAKE_AUTHENTICATOR: "SNOWFLAKE_JWT"
         run: |
           cd ./migrations/apps/warehouse
-          snow snowpark build
-          snow snowpark deploy --replace
+          snow snowpark build --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
+          snow snowpark deploy --replace --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
 
       - name: Run python integration tests
         run: |
           pytest -m integration
+
+      - name: Clean up private key
+        run: |
+          rm ${{ github.workspace }}/private_key.pem ${{ github.workspace }}/encrypted_private_key.pem

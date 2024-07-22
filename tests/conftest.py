@@ -4,6 +4,8 @@ from datetime import datetime
 
 import pytest
 from snowflake.snowpark import Session
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
 
 # Create a unique database/schema for each test run
@@ -11,12 +13,26 @@ DATABASE = f"SNOWFLAKE_MLPLATFORM_TEST_{uuid.uuid4().hex[:8].upper()}"
 SCHEMA = f"SNOWFLAKE_MLPLATFORM_TEST_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:8].upper()}"
 
 def get_connection_parameters():
+    passphrase = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSPHRASE")
+    private_key = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_RSAKEY")
+    if private_key is None:
+        raise ValueError("No private key found in environment variables")
+    
+    # Convert the key to bytes
+    private_key_bytes = private_key.encode('utf-8')
+    
+    private_key_obj = serialization.load_pem_private_key(
+            private_key_bytes,
+            password=passphrase.encode() if passphrase else None,
+            backend=default_backend()
+        )
     connection_params = {
         "ACCOUNT": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ACCOUNT"),
         "USER": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_USER"),
         "PASSWORD": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSWORD"),
         "ROLE": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ROLE"),
         "WAREHOUSE": os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE"),
+        "private_key": private_key_obj,
     }
     assert all(connection_params.values()), "Please set all the required environment variables for Snowflake connection."
     return connection_params

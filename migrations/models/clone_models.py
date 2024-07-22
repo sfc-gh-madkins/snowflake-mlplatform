@@ -4,6 +4,9 @@ import os
 
 from snowflake.snowpark import Session
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
 
 def clone_models(session: Session, prod_database: str, prod_schema: str):
     model_path = f"{prod_database}.{prod_schema}"
@@ -26,7 +29,20 @@ if __name__ == "__main__":
     parser.add_argument("--prod_database", required=True, help="")
     parser.add_argument("--prod_schema", required=True, help="")
     args = parser.parse_args()
-
+    
+    passphrase = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_PASSPHRASE")
+    private_key = os.environ.get("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_RSAKEY")
+    if private_key is None:
+        raise ValueError("No private key found in environment variables")
+    
+    # Convert the key to bytes
+    private_key_bytes = private_key.encode('utf-8')
+    
+    private_key_obj = serialization.load_pem_private_key(
+            private_key_bytes,
+            password=passphrase.encode() if passphrase else None,
+            backend=default_backend()
+        )
     connection_parameters = {
         "ACCOUNT": os.getenv("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_ACCOUNT"),
         "USER": os.getenv("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_USER"),
@@ -35,6 +51,7 @@ if __name__ == "__main__":
         "WAREHOUSE": os.getenv("SNOWFLAKE_CONNECTIONS_SNOWCONNECTION_WAREHOUSE"),
         "DATABASE": os.getenv("SNOWFLAKE_DATABASE"),
         "SCHEMA": os.getenv("SNOWFLAKE_SCHEMA"),
+        "private_key": private_key_obj,
     }
 
     session = Session.builder.configs(connection_parameters).create()
