@@ -73,7 +73,7 @@ jobs:
 
       - name: Apply changes to snowflake apps
         env:
-          SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
+          SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/private_key.pem
           SNOWFLAKE_AUTHENTICATOR: "SNOWFLAKE_JWT"
         run: |
           cd ./migrations/apps/warehouse
@@ -86,4 +86,4 @@ jobs:
 
       - name: Clean up private key
         run: |
-          rm private_key.pem encrypted_private_key.pem
+          rm ${{ github.workspace }}/private_key.pem ${{ github.workspace }}/encrypted_private_key.pem
