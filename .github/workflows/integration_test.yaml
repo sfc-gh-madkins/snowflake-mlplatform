@@ -64,7 +64,7 @@ jobs:
           SNOWFLAKE_CONNECTIONS_MYCONNECTION_AUTHENTICATOR: "SNOWFLAKE_JWT"
         run: |
           snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
-          snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH --authenticator SNOWFLAKE_JWT -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
+          snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
           python ./migrations/models/clone_models.py --prod_database $SNOWFLAKE_DATABASE_PROD --prod_schema $SNOWFLAKE_SCHEMA_PROD
     
       - name: Apply changes to snowflake features store, datasets, and model registry
@@ -76,8 +76,8 @@ jobs:
       - name: Apply changes to snowflake apps
         run: |
           cd ./migrations/apps/warehouse
-          snow snowpark build --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH --authenticator "SNOWFLAKE_JWT" 
-          snow snowpark deploy --replace --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH --authenticator "SNOWFLAKE_JWT" 
+          snow snowpark build --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
+          snow snowpark deploy --replace --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
 
       - name: Run python integration tests
         run: |
