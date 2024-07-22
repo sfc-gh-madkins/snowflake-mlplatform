@@ -60,8 +60,6 @@ jobs:
         env:
           SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
           SNOWFLAKE_AUTHENTICATOR: "SNOWFLAKE_JWT"
-          #SNOWFLAKE_CONNECTIONS_MYCONNECTION_PRIVATE_KEY_PATH: private_key.pem
-          #SNOWFLAKE_CONNECTIONS_MYCONNECTION_AUTHENTICATOR: "SNOWFLAKE_JWT"
         run: |
           snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
           snow sql --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
@@ -76,6 +74,7 @@ jobs:
       - name: Apply changes to snowflake apps
         env:
           SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
+          SNOWFLAKE_AUTHENTICATOR: "SNOWFLAKE_JWT"
         run: |
           cd ./migrations/apps/warehouse
           snow snowpark build --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
