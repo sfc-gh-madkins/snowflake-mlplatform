@@ -61,9 +61,11 @@ jobs:
           SNOWFLAKE_PRIVATE_KEY_PATH: private_key.pem
         run: |
           export SNOWSQL_PRIVATE_KEY_PATH=$SNOWFLAKE_PRIVATE_KEY_PATH
+          snow configure set --authenticator SNOWFLAKE_JWT --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH
           snow sql --private-key-path $SNOWSQL_PRIVATE_KEY_PATH --authenticator SNOWFLAKE_JWT -q "CREATE DATABASE $SNOWFLAKE_DATABASE; DROP SCHEMA PUBLIC;"
           snow sql --private-key-path $SNOWSQL_PRIVATE_KEY_PATH --authenticator SNOWFLAKE_JWT -q "CREATE SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA CLONE $SNOWFLAKE_DATABASE_PROD.$SNOWFLAKE_SCHEMA_PROD;"
           python ./migrations/models/clone_models.py --prod_database $SNOWFLAKE_DATABASE_PROD --prod_schema $SNOWFLAKE_SCHEMA_PROD
+          
 
       - name: Apply changes to snowflake features store, datasets, and model registry
         run: |
