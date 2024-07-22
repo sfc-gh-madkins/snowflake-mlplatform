@@ -76,8 +76,8 @@ jobs:
       - name: Apply changes to snowflake apps
         run: |
           cd ./migrations/apps/warehouse
-          snow snowpark build
-          snow snowpark deploy --replace
+          snow snowpark build --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH --authenticator SNOWFLAKE_JWT 
+          snow snowpark deploy --replace --private-key-path $SNOWFLAKE_PRIVATE_KEY_PATH --authenticator SNOWFLAKE_JWT 
 
       - name: Run python integration tests
         run: |
