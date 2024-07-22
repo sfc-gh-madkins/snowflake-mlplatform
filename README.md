@@ -1,56 +1,51 @@
-# Example of a CI/CD pipeline for Snowflake ML Platform
+# Snowflake ML Platform: An template repository for MLOps with Snowflake
 
-This repo provides an example of a CI/CD pipeline for the Snowflake ML Platform. The pipeline is implemented using GitHub Actions and demonstrates how to automate the deployment of a machine learning model to Snowflake.
-	
-Some of the key features of the pipeline include:  
-- Feature Store (can be installed if you don't have it)
-- Training an ML Model (part of the integration test)
+Snowflakes point of view is that AI & machine learning is a superset of software engineering. The purpose of this repository is be a starting point (and includes a demo) that satisfies all of the requisite software engineering best practices for safely deploying a machine learning model into production using entirely Snowflake primitives.
 
-Tests  
-- Unit Tests
-- Integration Tests
+From feature definitions and transforms to safely testing model-powered applications for production use cases, Snowflake makes it possible for everything to be source controlled and orchestrated as code. Lets dive in!
 
-The demo shows a CI/CD approach using Github actions. Most teams will modify this to reflect their own MLOps practices. This example is to show possibilities, not recommend a specific workflow. 
+Much like how standard software code is safely deployed to production, we will:
+1.) Create a clone of the production environment
+2.) Make changes to the clone such as adding new features, datasets, or models that we want to add to the production environment
+3.) Test the clone with the changes to ensure that it is safe to deploy to production (the CI part)
+4.) Incrementally apply the changes that have been tested and approved from the  clone to production environment (the CD part)
 
----
+*In this repository, we will use  Github actions to facilate the CI/CD process. For testing, this will happen on a new PR. For deployment, this will happen on a release. This can certainy be modified to fit your team's MLOps practices.*
 
-## To get this demo running:
+From a Snowflake perspective, the key features of the pipeline includes:
+- Snowflake Feature Store (the ability to define features declaratively)
+- Snowflake Datasets (the ability to create point-in-time correct immutable datasets for model training)
+- Snowflake Model Registry (the ability to performance ultra-scalable inference)
+
+## Installation: Running the example
 A. Fork the MLPlatform Repo: https://github.com/sfc-gh-madkins/snowflake-mlplatform
 
-B. Click on the Actions tab and Select that you understand workflows will be enabled
-
-C. Add a new Environment for testing under Settings - name it: `test`
-
-D. Add in Environment Secrets to `test` with your values:
-
-    SNOWFLAKE_ACCOUNT 
+B. Go to the repository Settings > Secrets and variables > Actions page and add the following "Repository secrets > New repository secret":
+    SNOWFLAKE_ACCOUNT
     SNOWFLAKE_USER
     SNOWFLAKE_PASSWORD
     SNOWFLAKE_ROLE
     SNOWFLAKE_WAREHOUSE
-    
-E. Add in Environment Variables to `test`:
-    
-    SNOWFLAKE_DATABASE_PROD - (location of existing airline feature store)
-    SNOWFLAKE_SCHEMA_PROD -  Schema for feature store - typically “FEATURE_STORE”
 
-F. Add a new Environment for testing under Settings - name it: `prod`
+C. Go to the repository Settings > Environments and create a "New environment > Add" named: `prod`
 
-H. Add in Environment Secrets to `prod` with your values:
+D. On the same page, add the following "Environment variables > New environment variable":
+    Name: SNOWFLAKE_DATABASE_PROD Value: <your snowflake database>
+    Name: SNOWFLAKE_SCHEMA_PROD Value: <your snowflake schema>
 
-    SNOWFLAKE_ACCOUNT 
-    SNOWFLAKE_USER
-    SNOWFLAKE_PASSWORD
-    SNOWFLAKE_ROLE
-    SNOWFLAKE_WAREHOUSE
-    
-I. Add in Environment Variables to `prod`:
-    
-    SNOWFLAKE_DATABASE_PROD - (location of existing airline feature store)
-    SNOWFLAKE_SCHEMA_PROD -  Schema for feature store - typically “FEATURE_STORE”
+  *<your snowflake database>.<your snowflake schema> willl be the namespace where all of the demo assets will land, or, for production, would be the path where all of your snowflake objects would live*
 
+E. Go to the repository Settings > Environments and create a "New environment > Add" named: `test`
 
-There is an install script if you already haven't setup the Airlines feature store. You can trigger workflows with a push or using the manual trigger 
+F. On the same page, add the following "Environment variables > New environment variable":
+Name: SNOWFLAKE_DATABASE_PROD Value: <your snowflake database>
+Name: SNOWFLAKE_SCHEMA_PROD Value: <your snowflake schema>
+
+G. Click on the Actions tab and Select that you understand workflows will be enabled
+
+H. Manually trigger the `install-prod-example` Github workflow to setup the initial set of base tables we will build the Snowflake ML Platform on top of.
+
+*The demo data we will be using is related to the Airlines industry. Specifially, there will be 3 tables: US_FLIGHT_SCHEDULES, AIRPORT_WEATHER_STATION, and PLANE_MODEL_ATTRIBUTES, that we will play with in their raw state and look to build a series of features, datasets, and models that solve a "prediciting flight delays" use case*
 
 ---
 
@@ -58,3 +53,5 @@ There is an install script if you already haven't setup the Airlines feature sto
 - canary testing what does this look like?
 - how does monitoring work?
 - how does data quality montiors work?
+
+Snowflakes point of view is that AI & machine learning is really a superset of software engineering
